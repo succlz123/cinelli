@@ -1,0 +1,8 @@
+ext {
+    minSdkVersion = 14
+    compileSdkVersion = 28
+    targetSdkVersion = 28
+
+    androidxAnnotations = "androidx.annotation:annotation:1.0.0"
+    androidxAppCompat = "androidx.appcompat:appcompat:1.0.0"
+}

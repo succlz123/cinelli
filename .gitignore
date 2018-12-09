@@ -1,0 +1,42 @@
+# Eclipse
+.project
+.classpath
+.settings
+.checkstyle
+
+# IntelliJ IDEA
+.idea
+*.iml
+*.ipr
+*.iws
+classes
+gen-external-apklibs
+.build
+.buildscript
+
+# Gradle
+.gradle
+build
+
+# Maven
+target
+release.properties
+pom.xml.*
+
+# built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# Local configuration file (sdk path, etc)
+local.properties
+
+*.prefs
+
+# The keystore file
+app/spothero-release.keystore
