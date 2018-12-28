@@ -63,7 +63,7 @@ class Task<TR> {
         }
     }
 
-    fun geResult(): TR? {
+    fun getResult(): TR? {
         synchronized(lock) {
             return result
         }
@@ -121,7 +121,7 @@ class Task<TR> {
 
     @JvmOverloads
     fun <CR> continueWith(then: Then<TR, CR>, executor: Executor = IMMEDIATE, canceller: Canceller? = null): Task<CR> {
-        var completed = false
+        var completed: Boolean
         val tk = Task<CR>()
         synchronized(lock) {
             completed = isCompleted
@@ -143,7 +143,7 @@ class Task<TR> {
         executor: Executor = IMMEDIATE,
         canceller: Canceller? = null
     ): Task<CR> {
-        var completed = false
+        var completed: Boolean
         val tk = Task<CR>()
         synchronized(lock) {
             completed = this.isCompleted
@@ -313,7 +313,12 @@ class Task<TR> {
         @JvmStatic
         fun <TR> forResult(value: TR): Task<TR> {
             if (value is Boolean) {
-                return (if (value) TASK_TRUE else TASK_FALSE) as Task<TR>
+                val result = if (value) {
+                    TASK_TRUE
+                } else {
+                    TASK_FALSE
+                }
+                return result as Task<TR>
             }
             val tk = Task<TR>()
             tk.seTR(value)
@@ -339,17 +344,17 @@ class Task<TR> {
 
         @JvmOverloads
         @JvmStatic
-        fun <TR> callInBackground(callable: Callable<TR>, ct: Canceller? = null): Task<TR> {
-            return call(callable, BACKGROUND, ct)
+        fun <TR> callInBackground(callable: Callable<TR>, canceller: Canceller? = null): Task<TR> {
+            return call(callable, BACKGROUND, canceller)
         }
 
         @JvmOverloads
         @JvmStatic
-        fun <TR> call(callable: Callable<TR>, executor: Executor = IMMEDIATE, ct: Canceller? = null): Task<TR> {
+        fun <TR> call(callable: Callable<TR>, executor: Executor = IMMEDIATE, canceller: Canceller? = null): Task<TR> {
             val tk = Task<TR>()
             try {
                 executor.execute {
-                    if (ct != null && ct.isCancellerRequested) {
+                    if (canceller != null && canceller.isCancellerRequested) {
                         tk.setCancelled()
                         return@execute
                     }
@@ -412,7 +417,7 @@ class Task<TR> {
             val firstCompleted = Task<Task<*>>()
             val isAnyTaskComplete = AtomicBoolean(false)
             for (task in tasks) {
-                (task as Task<Any>).continueWith({ it ->
+                task.continueWith({ it ->
                     if (isAnyTaskComplete.compareAndSet(false, true)) {
                         firstCompleted.seTR(it)
                     } else {
@@ -432,7 +437,7 @@ class Task<TR> {
                 } else {
                     list = ArrayList()
                     for (task in tasks) {
-                        task.geResult()?.let { result ->
+                        task.getResult()?.let { result ->
                             list.add(result)
                         }
                     }
@@ -452,8 +457,7 @@ class Task<TR> {
             val count = AtomicInteger(tasks.size)
             val isCancelled = AtomicBoolean(false)
             for (task in tasks) {
-                val t = task as Task<Any>
-                t.continueWith({ current ->
+                task.continueWith({ current ->
                     if (task.isFaulted) {
                         current.error?.let { ex ->
                             synchronized(errorLock) {
